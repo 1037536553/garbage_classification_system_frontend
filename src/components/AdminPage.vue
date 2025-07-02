@@ -7,12 +7,12 @@
       >
         用户查询
       </el-button>
-      <el-button 
+      <!-- <el-button 
         :type="activeTab === 'entry' ? 'primary' : ''" 
         @click="activeTab = 'entry'"
       >
         词条查询
-      </el-button>
+      </el-button> -->
     </div>
     
     <div class="tab-content">
@@ -25,12 +25,12 @@
 <script>
 import { ref } from 'vue'
 import UserSearch from './UserSearch.vue'
-import EntrySearch from './EntrySearch.vue'
+
 
 export default {
   components: {
-    UserSearch,
-    EntrySearch
+    UserSearch
+    //,EntrySearch
   },
   setup() {
     const activeTab = ref('user') // 默认显示用户查询

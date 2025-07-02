@@ -117,6 +117,8 @@ export default {
     const searchResult = ref(null)
     const searchError = ref('')
     const showEditDialog = ref(false)
+    const baseURL= 'http://10.242.22.231:5000'
+    const admin_token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc1MTQzODY2NywiZXhwIjoxNzUxNTI1MDY3fQ.ElGVYrJ83IF32UFXls10TX3ZQ0zmibM9HpT1zY8rFgs'
     const currentEditItem = ref({
       id: null,
       username: '',
@@ -141,10 +143,10 @@ export default {
       try {
         // 调用获取用户详情接口
         const response = await axios.get(
-          `/api/admin/users/${searchKeyword.value.trim()}`,
+          `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+              'Authorization': `Bearer ${admin_token}`
             }
           }
         );
@@ -171,11 +173,11 @@ export default {
     const updateUserStatus = async (userId, newStatus) => {
       try {
         const response = await axios.put(
-          `/api/admin/users/${userId}/status`,
+          `${baseURL}/api/admin/users/${userId}/status`,
           { status: newStatus },
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+              'Authorization': `Bearer ${admin_token}`
             }
           }
         );
@@ -192,11 +194,11 @@ export default {
     const updateUserPassword = async (userId, newPassword) => {
       try {
         const response = await axios.put(
-          `/api/admin/users/${userId}/set_password`,
+          `${baseURL}/api/admin/users/${userId}/set_password`,
           { new_password: newPassword },
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+              'Authorization': `Bearer ${admin_token}`
             }
           }
         );
