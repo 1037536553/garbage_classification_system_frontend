@@ -1,18 +1,10 @@
 <template>
   <div class="user-search">
     <div class="search-container">
-      <el-input 
-      v-model="searchKeyword" 
-      placeholder="请输入用户ID" 
-      clearable 
-      @keyup.enter="searchUser"
-      style="flex: 1" />
-      <el-button 
-      type="success" 
-      @click="searchUser" 
-      :disabled="!searchKeyword || !searchKeyword.trim()"
-      class="search-button"
-      style="margin-left: 10px;">搜索
+      <el-input v-model="searchKeyword" placeholder="请输入用户ID（留空则获取所有用户）" clearable @keyup.enter="searchUser"
+        style="flex: 1" />
+      <el-button type="success" @click="searchUser" :disabled="loading" class="search-button"
+        style="margin-left: 10px;">搜索
       </el-button>
     </div>
 
@@ -28,8 +20,8 @@
     </div>
 
     <div class="result-container" v-if="searchResult">
-      <el-table :data="[searchResult]" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="用户ID"  />
+      <el-table :data="searchResult" border style="width: 100%; margin-top: 20px">
+        <el-table-column prop="id" label="用户ID" />
         <el-table-column prop="username" label="登录名" />
         <!-- <el-table-column prop="userpassword" label="密码"  /> -->
         <el-table-column prop="role" label="权限">
@@ -37,8 +29,8 @@
             {{ row.role === 0 ? '普通用户' : '管理员' }}
           </template>
         </el-table-column>
-        <el-table-column prop="points" label="积分"  />
-        <el-table-column prop="status" label="状态" >
+        <el-table-column prop="points" label="积分" />
+        <el-table-column prop="status" label="状态">
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
               {{ row.status === 0 ? '正常' : '封禁' }}
@@ -47,11 +39,7 @@
         </el-table-column>
         <el-table-column label="操作">
           <template #default="{ row }">
-            <el-button 
-              type="primary" 
-              size="small" 
-              @click="openEditDialog(row)"
-            >
+            <el-button type="primary" size="small" @click="openEditDialog(row)">
               修改
             </el-button>
           </template>
@@ -59,8 +47,8 @@
       </el-table>
     </div>
 
-    <div v-if="searchError" class="error-message">
-      {{ searchError }}
+    <div v-if="!loading && searchResult.length === 0 && !searchError" class="no-data">
+      <el-empty description="暂无数据" />
     </div>
 
     <!-- 管理员编辑对话框 -->
@@ -120,10 +108,9 @@ export default {
   setup(props) {
     const loading = ref(false)
     const searchKeyword = ref('')
-    const searchResult = ref(null)
+    const searchResult = ref([])
     const searchError = ref('')
     const showEditDialog = ref(false)
-    // const admin_token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc1MTQzODY2NywiZXhwIjoxNzUxNTI1MDY3fQ.ElGVYrJ83IF32UFXls10TX3ZQ0zmibM9HpT1zY8rFgs'
     const currentEditItem = ref({
       id: null,
       username: '',
@@ -140,21 +127,36 @@ export default {
     })
     
     const searchUser = async () => {
-      searchResult.value = null;
+      // 清空上一次结果
+      searchResult.value = [];
       searchError.value = '';
+      loading.value = true; // 开始加载状态
       
       try {
-        // 调用获取用户详情接口
-        const response = await axios.get(
-          `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${props.token}`
+        if (!searchKeyword.value || !searchKeyword.value.trim()) {
+          // 如果没有输入关键词，则获取所有用户
+          const response = await axios.get(
+            `${baseURL}/api/admin/users`,
+            {
+              headers: {
+                'Authorization': `Bearer ${props.token}`
+              }
             }
-          }
-        );
-        
-        searchResult.value = response.data;
+          )
+          searchResult.value = response.data;
+        } else {
+          // 获取单个用户
+          const response = await axios.get(
+            `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${props.token}`
+              }
+            }
+          );
+          searchResult.value = [response.data];
+        }
+
       } catch (error) {
         if (error.response?.status === 404) {
           searchError.value = '未查询到用户，请检查用户ID是否正确';
@@ -232,7 +234,12 @@ export default {
           );
           
           // 更新本地数据
-          searchResult.value = updatedUser;
+          const index = searchResult.value.findIndex(u => u.id === updatedUser.id);
+          if (index !== -1) {
+            const newResults = [...searchResult.value];
+            newResults[index] = updatedUser;
+            searchResult.value = newResults;
+          }
         }
         
         showEditDialog.value = false;
@@ -327,5 +334,9 @@ export default {
   justify-content: center;
   padding: 20px;
   color: #409eff;
+}
+
+.no-data{
+  margin-top: 40px;
 }
 </style>
