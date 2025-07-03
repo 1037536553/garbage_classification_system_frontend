@@ -1,5 +1,6 @@
 <template>
   <div class="admin-container">
+
     <div class="admin-tabs">
       <el-button 
         :type="activeTab === 'user' ? 'primary' : ''" 
@@ -16,8 +17,8 @@
     </div>
     
     <div class="tab-content">
-      <UserSearch v-if="activeTab === 'user'" />
-      <EntrySearch v-else />
+      <UserSearch v-if="activeTab === 'user'" :token="token"/>
+      <!-- <EntrySearch v-else /> -->
     </div>
   </div>
 </template>
@@ -32,6 +33,7 @@ export default {
     UserSearch
     //,EntrySearch
   },
+  props: ['token'],
   setup() {
     const activeTab = ref('user') // 默认显示用户查询
     

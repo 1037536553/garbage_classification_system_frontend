@@ -1,0 +1,231 @@
+用户登录页面
+功能描述： 用户/管理员登录
+
+路径：/api/auth/login
+
+类型： POST
+
+请求参数：
+
+{"username": "xx", "password": "yy"}
+参数描述：
+
+username（varchar，必需）：用户名
+
+password（varchar，必需）：用户密码
+
+响应数据：
+
+①登陆成功（200）：
+
+{
+
+  "message": "登录成功",
+
+  "role": 0,
+
+  "token": "xx.yy.zz"
+
+}
+②登陆失败：
+
+401:
+
+{"message": "用户名或密码错误"}
+403 Forbidden：
+
+{'message': '该账户已被封禁，请联系管理员'}
+备注：
+
+role:0表示普通用户，1表示管理员
+
+管理员模块
+获取用户列表
+功能描述： 获取所有用户列表
+
+路径：/api/admin/users
+
+类型： GET
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+请求参数： 无
+
+响应数据：
+
+成功响应（200）：
+
+[
+  {
+    "id": 1,
+    "username": "admintest",
+    "role": 1,
+    "points": 0,
+    "status": 0
+  },
+  {
+    "id": 2,
+    "username": "usertest",
+    "role": 0,
+    "points": 100,
+    "status": 0
+  }
+]
+失败响应：
+
+401 Unauthorized：
+
+{'message': '令牌格式错误，应为 "Bearer <token>"'}
+{'message': '无效的用户'}
+{"message": "缺少认证令牌"}
+{"message": "无效的令牌"}
+{'message': '令牌已过期'}
+{'message': '无效的令牌'}
+403 Forbidden：
+
+{"message": "需要管理员权限"}
+备注：
+
+测试账号：
+
+{"username": "admintest", "password": "admintest"}
+获取单个用户详情
+功能描述： 获取单个用户详情
+
+路径：/api/admin/users/{int:user_id}
+
+类型： GET
+
+路径参数：
+
+{int:user_id}：用户id
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+请求参数： 无
+
+响应数据：
+
+成功响应（200）：
+
+{
+  "id": 2,
+  "points": 0,
+  "role": 0,
+  "status": 1,
+  "username": "test222"
+}
+失败响应：
+
+400 Bad Request：
+
+{"message": "无效的状态值"}
+401 Unauthorized：
+
+{"message": "缺少认证令牌"}
+403 Forbidden：
+
+{"message": "需要管理员权限"}
+404 Not Found：用户不存在
+
+备注： 无
+
+封禁/解封用户
+功能描述： 封禁/解封用户
+
+路径：/api/admin/users/{int:user_id}/status
+
+类型： PUT
+
+路径参数：
+
+{int:user_id}：用户id
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+请求参数：
+
+{"status": 1}
+参数描述：
+
+status（int，必需）：账号状态，(0: 普通用户, 1: 管理员)
+
+响应数据：
+
+成功响应：
+
+{
+    "message": "用户 test111 状态已更新",
+    "user": {
+        "id": 1,
+     	"points": 0,
+        "role": 0,
+        "status": 1,
+        "username": "test111"
+  }
+}
+失败响应：
+
+400 Bad Request：
+
+{"message": "无效的状态值"}
+401 Unauthorized：
+
+{"message": "缺少认证令牌"}
+403 Forbidden：
+
+{"message": "需要管理员权限"}
+404 Not Found：用户不存在
+
+备注： 无
+
+修改用户密码
+功能描述： 管理员修改用户密码
+
+路径：/api/admin/users/{int:user_id}/set_password
+
+类型： PUT
+
+路径参数：
+
+{int:user_id}：用户id
+
+请求头：
+
+Authorization: Bearer <管理员token> 
+Content-Type: application/json
+请求参数：
+
+{ "new_password": "new_password" }
+参数描述：
+
+new_password（varchar，必需）：要更改的新密码
+
+响应数据：
+
+成功响应 (200):
+
+{ "message": "用户 't' 的密码已更新" }
+失败响应:
+
+400 Bad Request:
+
+{"message": "缺少新密码"}
+401 Unauthorized:
+
+{"message": "缺少认证令牌"}
+403 Forbidden:
+
+{"message": "需要管理员权限"}
+404 Not Found：用户不存在
+
+备注： 无

@@ -1,39 +1,51 @@
 <template>
   <div class="user-search">
-    <el-input 
-      v-model="searchKeyword"
-      placeholder="请输入用户ID"
-      clearable
+    <div class="search-container">
+      <el-input 
+      v-model="searchKeyword" 
+      placeholder="请输入用户ID" 
+      clearable 
       @keyup.enter="searchUser"
-    >
-      <template #append>
-        <el-button 
-          type="success" 
-          @click="searchUser"
-          :disabled="!searchKeyword || !searchKeyword.trim()"
-          class="search-button"
-        >搜索</el-button>
-      </template>
-    </el-input>
-    
+      style="flex: 1" />
+      <el-button 
+      type="success" 
+      @click="searchUser" 
+      :disabled="!searchKeyword || !searchKeyword.trim()"
+      class="search-button"
+      style="margin-left: 10px;">搜索
+      </el-button>
+    </div>
+
+    <div v-if="loading" class="loading-container">
+      <el-icon class="is-loading" style="font-size: 24px;">
+        <el-icon-loading />
+      </el-icon>
+      <span>查询中...</span>
+    </div>
+
+    <div v-if="searchError" class="error-message">
+      {{ searchError }}
+    </div>
+
     <div class="result-container" v-if="searchResult">
       <el-table :data="[searchResult]" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="用户ID" width="100" />
-        <el-table-column prop="username" label="登录名" width="150" />
-        <el-table-column prop="role" label="权限" width="100">
+        <el-table-column prop="id" label="用户ID"  />
+        <el-table-column prop="username" label="登录名" />
+        <!-- <el-table-column prop="userpassword" label="密码"  /> -->
+        <el-table-column prop="role" label="权限">
           <template #default="{ row }">
             {{ row.role === 0 ? '普通用户' : '管理员' }}
           </template>
         </el-table-column>
-        <el-table-column prop="points" label="积分" width="100" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="points" label="积分"  />
+        <el-table-column prop="status" label="状态" >
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
               {{ row.status === 0 ? '正常' : '封禁' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120">
+        <el-table-column label="操作">
           <template #default="{ row }">
             <el-button 
               type="primary" 
@@ -46,12 +58,12 @@
         </el-table-column>
       </el-table>
     </div>
-    
+
     <div v-if="searchError" class="error-message">
       {{ searchError }}
     </div>
-    
-    <!-- 用户编辑对话框 -->
+
+    <!-- 管理员编辑对话框 -->
     <el-dialog v-model="showEditDialog" title="修改用户信息" width="500px">
       <el-form :model="currentEditItem" label-width="100px">
         <el-form-item label="用户ID">
@@ -61,28 +73,19 @@
           <el-input v-model="currentEditItem.username" disabled />
         </el-form-item>
         <el-form-item label="新密码">
-          <el-input 
-            v-model="newPassword" 
-            type="password"
-            show-password
-            placeholder="输入新密码"
-          />
+          <el-input v-model="newPassword" type="password" show-password placeholder="输入新密码" />
         </el-form-item>
         <el-form-item label="权限">
-          <el-input 
-            :value="roleDisplay" 
-            disabled 
-          />
+          <el-input :value="roleDisplay" disabled />
           <div class="permission-hint">
-            <el-icon><Warning /></el-icon>
+            <el-icon>
+              <Warning />
+            </el-icon>
             <span>权限级别需在数据库直接修改</span>
           </div>
         </el-form-item>
         <el-form-item label="积分">
-          <el-input 
-            v-model.number="currentEditItem.points" 
-            disabled
-          />
+          <el-input v-model.number="currentEditItem.points" disabled />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model.number="currentEditItem.status" placeholder="请选择">
@@ -91,7 +94,7 @@
           </el-select>
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showEditDialog = false">取消</el-button>
@@ -105,20 +108,22 @@
 <script>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Warning } from '@element-plus/icons-vue'
+import { Warning, Loading } from '@element-plus/icons-vue'
 import axios from 'axios'
-
+import { baseURL } from '/src/config.js'
 export default {
   components: {
-    Warning
+    Warning,
+    Loading
   },
-  setup() {
+  props: ['token'],
+  setup(props) {
+    const loading = ref(false)
     const searchKeyword = ref('')
     const searchResult = ref(null)
     const searchError = ref('')
     const showEditDialog = ref(false)
-    const baseURL= 'http://10.242.22.231:5000'
-    const admin_token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc1MTQzODY2NywiZXhwIjoxNzUxNTI1MDY3fQ.ElGVYrJ83IF32UFXls10TX3ZQ0zmibM9HpT1zY8rFgs'
+    // const admin_token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc1MTQzODY2NywiZXhwIjoxNzUxNTI1MDY3fQ.ElGVYrJ83IF32UFXls10TX3ZQ0zmibM9HpT1zY8rFgs'
     const currentEditItem = ref({
       id: null,
       username: '',
@@ -135,8 +140,6 @@ export default {
     })
     
     const searchUser = async () => {
-      if (!searchKeyword.value || !searchKeyword.value.trim()) return;
-      
       searchResult.value = null;
       searchError.value = '';
       
@@ -146,7 +149,7 @@ export default {
           `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
           {
             headers: {
-              'Authorization': `Bearer ${admin_token}`
+              'Authorization': `Bearer ${props.token}`
             }
           }
         );
@@ -158,6 +161,9 @@ export default {
         } else {
           searchError.value = `查询失败: ${error.response?.data?.message || error.message}`;
         }
+      }finally{
+        // 结束加载
+        loading.value=false
       }
     };
     
@@ -177,7 +183,7 @@ export default {
           { status: newStatus },
           {
             headers: {
-              'Authorization': `Bearer ${admin_token}`
+              'Authorization': `Bearer ${props.token}`
             }
           }
         );
@@ -198,7 +204,7 @@ export default {
           { new_password: newPassword },
           {
             headers: {
-              'Authorization': `Bearer ${admin_token}`
+              'Authorization': `Bearer ${props.token}`
             }
           }
         );
@@ -237,6 +243,7 @@ export default {
     };
     
     return {
+      loading,
       searchKeyword,
       searchResult,
       searchError,
@@ -256,6 +263,11 @@ export default {
 <style scoped>
 .user-search {
   padding: 20px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
 }
 
 .result-container {
@@ -307,5 +319,13 @@ export default {
 .permission-hint .el-icon {
   margin-right: 6px;
   font-size: 14px;
+}
+
+.loading-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #409eff;
 }
 </style>

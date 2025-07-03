@@ -39,7 +39,7 @@
 import AdminPage from '/src/components/AdminPage.vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-
+import { baseURL } from '/src/config.js'
 export default {
   name: 'App',
   components: {
@@ -76,7 +76,7 @@ export default {
       }
       
       try {
-        const response = await fetch('http://10.242.22.231:5000/api/auth/login', {
+        const response = await fetch(`${baseURL}/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -151,35 +151,6 @@ export default {
   padding: 20px;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ebeef5;
-  padding-bottom: 15px;
-}
 
-.login-container {
-  display: flex;
-  align-items: center;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-  color: #409EFF;
-}
-
-.login-prompt {
-  margin-top: 100px;
-  text-align: center;
-}
-
-h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
 </style>
 
