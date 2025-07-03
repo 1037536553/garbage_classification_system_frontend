@@ -110,7 +110,6 @@ export default {
     Warning,
     Loading
   },
-  props: ['token'],
   setup(props) {
     const loading = ref(false)
     const searchKeyword = ref('')
@@ -145,7 +144,7 @@ export default {
             `${baseURL}/api/admin/users`,
             {
               headers: {
-                'Authorization': `Bearer ${props.token}`
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
               }
             }
           )
@@ -156,7 +155,7 @@ export default {
             `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
             {
               headers: {
-                'Authorization': `Bearer ${props.token}`
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
               }
             }
           );
@@ -199,7 +198,7 @@ export default {
           { status: newStatus },
           {
             headers: {
-              'Authorization': `Bearer ${props.token}`
+              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
           }
         );
@@ -225,7 +224,7 @@ export default {
           { new_password: newPassword },
           {
             headers: {
-              'Authorization': `Bearer ${props.token}`
+              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
           }
         );

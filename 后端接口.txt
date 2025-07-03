@@ -1,4 +1,4 @@
-用户登录页面
+管理员登录
 功能描述： 用户/管理员登录
 
 路径：/api/auth/login
@@ -35,10 +35,6 @@ password（varchar，必需）：用户密码
 403 Forbidden：
 
 {'message': '该账户已被封禁，请联系管理员'}
-备注：
-
-role:0表示普通用户，1表示管理员
-
 管理员模块
 获取用户列表
 功能描述： 获取所有用户列表
@@ -228,4 +224,287 @@ new_password（varchar，必需）：要更改的新密码
 {"message": "需要管理员权限"}
 404 Not Found：用户不存在
 
+备注： 无
+
+文章模块
+获取文章列表
+功能描述： 获取所有 status 为 0 (已发布) 的文章列表
+
+路径：/api/articles/get
+
+类型： GET
+
+请求头： 无
+
+请求参数： 无
+
+响应数据：
+
+[
+  {
+     "author_id": 3,
+     "author_name": "admin",
+     "content": "测试测试测试",
+     "id": 1,
+     "status": 0,
+     "title": "测试",
+     "updated_time": "2025-06-28 15:44:45"
+  }
+]
+备注： 无需登录；status为1的文章不可见
+
+获取单篇文章详情
+功能描述： 所有人都可以获取文章列表
+
+路径：/api/articles/get/{int:article_id}
+
+类型： GET
+
+路径参数：
+
+{int:article_id}：文章id
+
+请求头： 无
+
+请求参数： 无
+
+响应数据：
+
+{
+    "author_id": 3,
+    "author_name": "admin",
+    "content": "测试测试测试",
+    "id": 1,
+    "status": 0,
+    "title": "测试",
+    "updated_time": "2025-06-28 15:44:45"
+}
+备注： 无需登录
+
+创建文章
+功能描述： 管理员可以创建文章
+
+路径：/api/articles/create
+
+类型： POST
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+请求参数：
+
+{
+	"title": "new_title",
+	"content": "new_content"
+}
+参数描述：
+
+title（varchar，必需）：文章标题
+
+content（varchar，必需）：文章内容
+
+响应数据：
+
+成功响应：
+
+{
+    "article": {
+        "author_id": 5,
+        "author_name": "admintest",
+        "content": "new_content444",
+        "id": 6,
+        "status": 0,
+        "title": "1111",
+        "updated_time": "2025-07-01 02:23:03"
+    },
+    "message": "文章创建成功"
+}
+失败响应：
+
+401 Unauthorized：
+
+{"message": "缺少认证令牌"}
+403 Forbidden：
+
+{"message": "需要管理员权限"}
+备注： 无
+
+修改文章
+功能描述： 管理员可以修改文章
+
+路径：/api/articles/revise/{int:article_id}
+
+类型： PUT
+
+路径参数：
+
+{int:article_id}（int，必需）：文章id
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+请求参数：
+
+{
+	"title": "title",
+	"content": "content"
+}
+参数描述：
+
+title（varchar，非必需）：文章标题
+
+content（varchar，非必需）：文章内容
+
+响应数据：
+
+成功响应：
+
+{
+    "article": {
+        "author_id": 5,
+        "author_name": "admintest",
+        "content": "new_content444",
+        "id": 4,
+        "status": 0,
+        "title": "new_title",
+        "updated_time": "2025-07-01 02:21:02"
+    },
+    "message": "文章更新成功"
+}
+失败响应：
+
+401 Unauthorized：
+
+{"message": "缺少认证令牌"}
+403 Forbidden：
+
+{"message": "需要管理员权限"}
+备注： 无
+
+删除文章
+功能描述： 管理员可以逻辑删除文章
+
+路径：/delete/{int:article_id}
+
+类型： DELETE
+
+路径参数：
+
+{int:article_id}：文章id
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+请求参数： 无
+
+响应数据：
+
+成功响应：
+
+{
+
+  "message": "文章已删除"
+
+}
+失败响应：
+
+401 Unauthorized：
+
+{"message": "缺少认证令牌"}
+403 Forbidden：
+
+{"message": "需要管理员权限"}
+备注： 无
+
+识别历史查询（管理员）
+功能描述： 管理员获取指定 ID 的用户的全部识别记录（包括已逻辑删除的）。
+
+路径： /api/history/user/{int:user_id}
+
+类型： GET
+
+路径参数：
+
+int:user_id（int，必需）： 需要查询的用户的ID
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+响应数据：
+
+成功响应：
+
+[
+    {
+        "id": 21,
+        "user_id": 5,
+        "query_type": "text",
+        "query_content": "废纸",
+        "result_category": "可回收物",
+        "created_at": "2025-07-02 10:15:00",
+        "status": 1
+    },
+    {
+        "id": 19,
+        "user_id": 5,
+        "query_type": "text",
+        "query_content": "香蕉皮",
+        "result_category": "厨余垃圾",
+        "created_at": "2025-06-30 09:00:00",
+        "status": 0
+    }
+]
+备注： 无
+
+兑换历史查询（管理员）
+功能描述： 管理员可以查看指定用户的兑换历史。
+
+路径： /reward/history/{int:user_id}
+
+类型： GET
+
+路径参数：
+
+user_id（int，必需）
+
+请求头：
+
+Authorization: Bearer <管理员token>
+
+Content-Type: application/json
+响应数据：
+
+成功响应：
+
+[
+    {
+        "created_at": "2025-07-03 01:31:04",
+        "id": 2,
+        "points_spent": 100,
+        "reward_id": 2,
+        "reward_name": "rewardB",
+        "user_id": 6
+    },
+    {
+        "created_at": "2025-07-03 01:29:32",
+        "id": 1,
+        "points_spent": 10,
+        "reward_id": 1,
+        "reward_name": "rewardA",
+        "user_id": 6
+    }
+]
+失败响应：
+
+404 NOT FOUND：
+
+{'message': '用户不存在'}
 备注： 无
