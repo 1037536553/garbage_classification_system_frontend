@@ -3,8 +3,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '../views/LoginPage.vue'
 import MainLayout from '../views/MainLayout.vue'
 import UserPage from '../views/user/UserPage.vue'
-import Function1Page from '../views/function1/Function1Page.vue'
-import Function2Page from '../views/function2/Function2Page.vue'
+import ArticlePage from '../views/article/ArticlePage.vue'
+import RecognitionHistoryPage from '../views/history/RecognitionHistoryPage.vue'
+import RewardHistoryPage from '../views/reward/RewardHistoryPage.vue'
 
 const routes = [
   {
@@ -23,14 +24,19 @@ const routes = [
         component: UserPage
       },
       {
-        path: '/function1',
-        name: 'Function1',
-        component: Function1Page
+        path: '/article',
+        name: 'Article',
+        component: ArticlePage
       },
       {
-        path: '/function2',
-        name: 'Function2',
-        component: Function2Page
+        path: '/history',
+        name: 'History',
+        component: RecognitionHistoryPage
+      },
+      {
+        path: '/reward',
+        name: 'Reward',
+        component: RewardHistoryPage
       }
     ]
   }

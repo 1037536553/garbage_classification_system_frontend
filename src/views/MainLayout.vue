@@ -5,38 +5,27 @@
       <div class="logo">垃圾分类系统 - 管理员模块</div>
       <div class="user-info">
         <span>欢迎，管理员 {{ username }}！</span>
-        <el-button 
-          type="danger" 
-          size="small" 
-          @click="handleLogout" 
-          style="margin-left: 15px;"
-        >退出</el-button>
+        <el-button type="danger" size="small" @click="handleLogout" style="margin-left: 15px;">退出</el-button>
       </div>
     </div>
-    
+
     <div class="admin-tabs">
-      <el-button 
-        :type="isActive('user')" 
-        @click="navigateTo('/user')"
-      >
+      <el-button :type="isActive('user')" @click="navigateTo('/user')">
         用户查询
       </el-button>
-      <el-button 
-        :type="isActive('function1')" 
-        @click="navigateTo('/function1')"
-      >
-        function1
+      <el-button :type="isActive('article')" @click="navigateTo('/article')">
+        文章管理
       </el-button>
-      <el-button 
-        :type="isActive('function2')" 
-        @click="navigateTo('/function2')"
-      >
-        function2
+      <el-button :type="isActive('history')" @click="navigateTo('/history')">
+        识别历史
+      </el-button>
+      <el-button :type="isActive('reward')" @click="navigateTo('/reward')">
+        兑换历史
       </el-button>
     </div>
-    
+
     <div class="main-content">
-      <router-view ></router-view>
+      <router-view></router-view>
     </div>
   </div>
 </template>

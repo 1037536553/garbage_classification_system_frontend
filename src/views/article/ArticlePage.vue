@@ -1,9 +1,9 @@
 <!-- src/views/function1/Function1Page.vue -->
 <template>
   <div class="function-page">
-    <h2>Function 1 页面</h2>
-    <p>这是功能1的内容区域</p>
-    <el-button type="primary">功能1操作</el-button>
+    <h2>文章管理</h2>
+    <p>这里是文章管理模块，用于创建、编辑和删除文章</p>
+    <el-button type="primary">管理文章</el-button>
   </div>
 </template>
 
