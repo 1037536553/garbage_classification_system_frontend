@@ -76,10 +76,16 @@
           <el-input v-model.number="currentEditItem.points" disabled />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model.number="currentEditItem.status" placeholder="请选择">
+          <el-select v-model.number="currentEditItem.status" placeholder="请选择" :disabled="isAdminUser(currentEditItem)">
             <el-option :label="'正常'" :value="0" />
             <el-option :label="'封禁'" :value="1" />
           </el-select>
+          <div v-if="isAdminUser(currentEditItem)" class="permission-hint">
+            <el-icon>
+              <Warning />
+            </el-icon>
+            <span>管理员账号不可封禁</span>
+          </div>
         </el-form-item>
       </el-form>
 
@@ -180,6 +186,14 @@ export default {
     // 更新用户状态
     const updateUserStatus = async (userId, newStatus) => {
       try {
+        // 检查是否为管理员用户
+        const targetUser = searchResult.value.find(u => u.id === userId);
+        if (targetUser && targetUser.role === 1) {
+          ElMessage.warning('管理员账号不可封禁');
+          return targetUser; // 返回未修改的用户信息
+        }
+
+
         const response = await axios.put(
           `${baseURL}/api/admin/users/${userId}/status`,
           { status: newStatus },
@@ -196,6 +210,11 @@ export default {
         ElMessage.error(`状态更新失败: ${error.response?.data?.message || error.message}`);
         throw error;
       }
+    };
+
+    // 检查是否为管理员用户
+    const isAdminUser = (user) => {
+      return user.role === 1; // 1表示管理员
     };
     
     // 更新用户密码
@@ -260,7 +279,8 @@ export default {
       roleDisplay,
       searchUser,
       openEditDialog,
-      updateUser
+      updateUser,
+      isAdminUser
     }
   }
 }
