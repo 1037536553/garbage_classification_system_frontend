@@ -1,14 +1,23 @@
 <!-- src/views/function1/Function1Page.vue -->
 <template>
-  <div class="function-page">
-    <h2>文章管理</h2>
-    <p>这里是文章管理模块，用于创建、编辑和删除文章</p>
-    <el-button type="primary">管理文章</el-button>
+  <div class="article-page">
+    <ArticleSearch />
   </div>
 </template>
 
+<script>
+import ArticleSearch from '/src/components/ArticleSearch.vue'
+
+export default {
+
+  components: {
+    ArticleSearch
+  }
+}
+</script>
+
 <style scoped>
-.function-page {
+.article-page {
   background: white;
   padding: 20px;
   border-radius: 4px;

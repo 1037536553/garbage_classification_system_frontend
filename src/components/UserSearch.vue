@@ -21,7 +21,7 @@
 
     <div class="result-container" v-if="searchResult">
       <el-table :data="searchResult" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="用户ID" />
+        <el-table-column prop="id" label="用户ID" width="70"/>
         <el-table-column prop="username" label="登录名" />
         <!-- <el-table-column prop="userpassword" label="密码"  /> -->
         <el-table-column prop="role" label="权限">
@@ -37,7 +37,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="80">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="openEditDialog(row)">
               修改
