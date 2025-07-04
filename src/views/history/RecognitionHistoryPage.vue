@@ -1,11 +1,27 @@
-<!-- 识别历史记录查询页面 -->
 <template>
   <div class="history-page">
-    <h2>识别历史记录查询</h2>
-    <p>这里是识别历史记录查询模块</p>
-    <el-button type="success">查询识别历史</el-button>
+    
+      <RecognitionHistorySearch :token="token" />
+
   </div>
 </template>
+
+<script>
+import { inject } from 'vue'
+import RecognitionHistorySearch from '/src/components/RecognitionHistorySearch.vue'
+
+export default {
+  components: {
+    RecognitionHistorySearch
+  },
+  setup() {
+    const token = inject('adminToken') || localStorage.getItem('adminToken')
+    return {
+      token
+    }
+  }
+}
+</script>
 
 <style scoped>
 .history-page {
@@ -14,4 +30,12 @@
   border-radius: 4px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
+
+.page-title {
+  color: #409eff;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
+  padding-bottom: 15px;
+}
+
 </style>

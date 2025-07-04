@@ -1,28 +1,24 @@
 <template>
   <div class="article-search">
     <div class="search-container">
-      <el-input 
-        v-model="searchKeyword" 
-        placeholder="请输入文章ID（留空则获取所有文章）" 
-        clearable 
-        @keyup.enter="searchArticles"
-        style="flex: 1" 
-      />
-      <el-button 
-        type="success" 
-        @click="searchArticles" 
-        :disabled="loading" 
-        class="search-button"
-        style="margin-left: 10px;"
-      >
-        搜索
+      <el-input v-model="searchKeyword" placeholder="请输入文章ID（留空则获取所有文章）" clearable @keyup.enter="searchArticles"
+        style="flex: 1">
+        <template #prepend>
+          <el-icon>
+            <User />
+          </el-icon>
+        </template>
+      </el-input>
+      <el-button type="success" @click="searchArticles" :disabled="loading" class="search-button"
+        style="margin-left: 10px;">
+        <el-icon>
+          <Search />
+        </el-icon>搜索
       </el-button>
-      <el-button 
-        type="primary" 
-        @click="showAddDialog = true"
-        style="margin-left: 10px;"
-      >
-        <el-icon><Plus /></el-icon> 添加文章
+      <el-button type="primary" @click="showAddDialog = true" style="margin-left: 10px;">
+        <el-icon>
+          <Plus />
+        </el-icon> 添加文章
       </el-button>
     </div>
 
@@ -39,11 +35,11 @@
 
     <div class="result-container" v-if="articles.length > 0">
       <el-table :data="articles" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="文章ID" width="70"/>
-        <el-table-column prop="title" label="标题"  />
+        <el-table-column prop="id" label="文章ID" width="70" />
+        <el-table-column prop="title" label="标题" />
         <el-table-column prop="author_name" label="作者" />
         <el-table-column prop="updated_time" label="更新时间" />
-        <el-table-column label="状态" >
+        <el-table-column label="状态">
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
               {{ row.status === 0 ? '已发布' : '已删除' }}
@@ -55,12 +51,7 @@
             <el-button type="primary" size="small" @click="openEditDialog(row)">
               修改
             </el-button>
-            <el-button 
-              type="danger" 
-              size="small" 
-              @click="deleteArticle(row.id)"
-              :disabled="row.status === 1"
-            >
+            <el-button type="danger" size="small" @click="deleteArticle(row.id)" :disabled="row.status === 1">
               删除
             </el-button>
           </template>
@@ -79,15 +70,10 @@
           <el-input v-model="newArticle.title" placeholder="请输入文章标题" />
         </el-form-item>
         <el-form-item label="内容">
-          <el-input 
-            v-model="newArticle.content" 
-            type="textarea" 
-            :rows="6"
-            placeholder="请输入文章内容" 
-          />
+          <el-input v-model="newArticle.content" type="textarea" :rows="6" placeholder="请输入文章内容" />
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showAddDialog = false">取消</el-button>
@@ -106,14 +92,10 @@
           <el-input v-model="currentArticle.title" />
         </el-form-item>
         <el-form-item label="内容">
-          <el-input 
-            v-model="currentArticle.content" 
-            type="textarea" 
-            :rows="6"
-          />
+          <el-input v-model="currentArticle.content" type="textarea" :rows="6" />
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showEditDialog = false">取消</el-button>
@@ -127,14 +109,16 @@
 <script>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Loading } from '@element-plus/icons-vue'
+import { Plus, Loading, Search, User } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { baseURL } from '/src/config.js'
 
 export default {
   components: {
     Plus,
-    Loading
+    Loading,
+    Search,
+    User
   },
   setup() {
     const loading = ref(false)

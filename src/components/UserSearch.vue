@@ -2,9 +2,19 @@
   <div class="user-search">
     <div class="search-container">
       <el-input v-model="searchKeyword" placeholder="请输入用户ID（留空则获取所有用户）" clearable @keyup.enter="searchUser"
-        style="flex: 1" />
-      <el-button type="success" @click="searchUser" :disabled="loading" class="search-button"
-        style="margin-left: 10px;">搜索
+        style="flex: 1">
+        <template #prepend>
+          <el-icon>
+            <User />
+          </el-icon>
+        </template>
+      </el-input>
+      <el-button type="success" 
+      @click="searchUser" 
+      :disabled="loading" 
+      class="search-button"
+        style="margin-left: 10px;">
+        <el-icon><Search /></el-icon>搜索
       </el-button>
     </div>
 
@@ -21,7 +31,7 @@
 
     <div class="result-container" v-if="searchResult">
       <el-table :data="searchResult" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="用户ID" width="70"/>
+        <el-table-column prop="id" label="用户ID" width="70" />
         <el-table-column prop="username" label="登录名" />
         <!-- <el-table-column prop="userpassword" label="密码"  /> -->
         <el-table-column prop="role" label="权限">
@@ -102,15 +112,17 @@
 <script>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Warning, Loading } from '@element-plus/icons-vue'
+import { Warning, Loading, User, Search } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { baseURL } from '/src/config.js'
 export default {
   components: {
     Warning,
-    Loading
+    Loading,
+    User,
+    Search
   },
-  setup(props) {
+  setup() {
     const loading = ref(false)
     const searchKeyword = ref('')
     const searchResult = ref([])
