@@ -45,7 +45,7 @@
         <el-table-column prop="query_content" label="查询内容" sortable />
         <el-table-column prop="result_category" label="分类结果" width="110" sortable />
         <el-table-column prop="created_at" label="查询时间" sortable />
-        <el-table-column label="状态" width="80">
+        <el-table-column prop="status" label="状态" width="80" sortable>
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
               {{ row.status === 0 ? '正常' : '已删除' }}

@@ -35,11 +35,11 @@
 
     <div class="result-container" v-if="articles.length > 0">
       <el-table :data="articles" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="文章ID" width="70" />
-        <el-table-column prop="title" label="标题" />
-        <el-table-column prop="author_name" label="作者" />
-        <el-table-column prop="updated_time" label="更新时间" />
-        <el-table-column label="状态">
+        <el-table-column prop="id" label="文章ID" width="100" sortable/>
+        <el-table-column prop="title" label="标题" sortable/>
+        <el-table-column prop="author_name" label="作者" sortable/>
+        <el-table-column prop="updated_time" label="更新时间" sortable/>
+        <el-table-column prop="status" label="状态" sortable>
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
               {{ row.status === 0 ? '已发布' : '已删除' }}

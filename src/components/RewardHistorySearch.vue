@@ -92,7 +92,7 @@
       >
         <el-table-column prop="id" label="记录ID" width="100" sortable />
         <el-table-column prop="user_id" label="用户ID" width="80" />
-        <el-table-column prop="reward_name" label="兑换物品"  />
+        <el-table-column prop="reward_name" label="兑换物品"  sortable/>
         <el-table-column prop="reward_id" label="奖品ID"  width="100" sortable/>
         <el-table-column prop="points_spent" label="消耗积分" sortable>
           <template #default="{ row }">

@@ -31,16 +31,16 @@
 
     <div class="result-container" v-if="searchResult">
       <el-table :data="searchResult" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="用户ID" width="70" />
-        <el-table-column prop="username" label="登录名" />
+        <el-table-column prop="id" label="用户ID" width="100" sortable/>
+        <el-table-column prop="username" label="登录名" sortable/>
         <!-- <el-table-column prop="userpassword" label="密码"  /> -->
-        <el-table-column prop="role" label="权限">
+        <el-table-column prop="role" label="权限" sortable>
           <template #default="{ row }">
             {{ row.role === 0 ? '普通用户' : '管理员' }}
           </template>
         </el-table-column>
-        <el-table-column prop="points" label="积分" />
-        <el-table-column prop="status" label="状态">
+        <el-table-column prop="points" label="积分" sortable/>
+        <el-table-column prop="status" label="状态" sortable>
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
               {{ row.status === 0 ? '正常' : '封禁' }}
