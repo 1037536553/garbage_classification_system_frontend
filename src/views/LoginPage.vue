@@ -47,12 +47,14 @@ export default {
     const loginError = ref('')
     const router = useRouter()
     
+    // 处理登录逻辑
     const handleLogin = async () => {
       if (!loginForm.value.username || !loginForm.value.password) {
         ElMessage.warning('请输入用户名和密码')
         return
       }
       
+      // 向后端请求
       try {
         const response = await fetch(`${baseURL}/api/auth/login`, {
           method: 'POST',
@@ -65,6 +67,7 @@ export default {
           })
         })
         
+        // 处理响应数据
         const data = await response.json()
         
         if (response.status === 200) {

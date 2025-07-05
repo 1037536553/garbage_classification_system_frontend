@@ -2,7 +2,11 @@
   <div class="history-search">
     <div class="header">
       <div class="search-container">
-        <el-input v-model="searchUserId" placeholder="请输入用户ID（必填）" clearable @keyup.enter="searchHistory"
+        <el-input 
+        v-model="searchUserId" 
+        placeholder="请输入用户ID（必填）" 
+        clearable 
+        @keyup.enter="searchHistory"
           class="search-input" style="flex: 1">
           <template #prepend>
             <el-icon>
@@ -103,13 +107,18 @@ export default {
     User,
     Search
   },
-  setup(props) {
+  setup() {
     const loading = ref(false)
     const searchUserId = ref('')
     const historyData = ref([])
     const searchError = ref('')
     const searched = ref(false)
     
+    // 搜索用户识别记录
+    // 1.搜索框为空时，无法点击“搜索”按钮
+    // 2.搜索框有内容时，向后端发送相应用户ID查询
+    // 3.接受后端响应
+    // 4.显示响应内容
     const searchHistory = async () => {
       if (!searchUserId.value) {
         ElMessage.warning('请输入用户ID')
@@ -142,15 +151,17 @@ export default {
       }
     }
     
-    // 计算统计数据
+    // 有效记录统计
     const activeRecords = computed(() => {
-      return historyData.value.filter(item => item.status === 0).length
+      return historyData.value.filter(item => item.status === 0).length 
     })
     
+    // 删除记录统计
     const deletedRecords = computed(() => {
       return historyData.value.filter(item => item.status === 1).length
     })
     
+    // 不同分类数统计
     const uniqueCategories = computed(() => {
       const categories = new Set()
       historyData.value.forEach(item => {

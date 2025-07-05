@@ -139,6 +139,9 @@ export default {
       content: ''
     })
     
+    // 文章搜索
+    // 1.检测搜索框是否为空
+    // 2.空搜索框get获取所有文章；否则get获取指定id文章
     const searchArticles = async () => {
       articles.value = []
       searchError.value = ''
@@ -180,6 +183,11 @@ export default {
       }
     }
     
+    // 创建文章
+    // 1.弹出文章添加弹窗
+    // 2.检测标题和内容是否为空
+    // 3.将标题和内容传给后端
+    // 4.接受后端创建信息
     const createArticle = async () => {
       if (!newArticle.value.title || !newArticle.value.content) {
         ElMessage.warning('请填写标题和内容')
@@ -209,11 +217,17 @@ export default {
       }
     }
     
+    // 文章编辑窗口
     const openEditDialog = (article) => {
       currentArticle.value = { ...article }
       showEditDialog.value = true
     }
     
+    // 修改文章
+    // 1.弹出文章弹窗
+    // 2.检测标题和内容是否为空
+    // 3.将标题和内容传给后端
+    // 4.后端接受修改信息
     const updateArticle = async () => {
       if (!currentArticle.value.title || !currentArticle.value.content) {
         ElMessage.warning('请填写标题和内容')
@@ -242,6 +256,9 @@ export default {
       }
     }
     
+    // 删除文章
+    // 1.弹出删除确认弹窗
+    // 2.确认删除，将删除请求发送给后端
     const deleteArticle = (articleId) => {
       ElMessageBox.confirm('确定要删除这篇文章吗？', '警告', {
         confirmButtonText: '确定',

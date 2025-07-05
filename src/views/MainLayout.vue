@@ -42,19 +42,23 @@ export default {
     
     const username = ref(localStorage.getItem('adminUsername') || '管理员')
     
+    // 检查当前路由
     const isActive = (path) => {
       return route.path.includes(path) ? 'primary' : ''
     }
     
+    // 导航到指定路径
     const navigateTo = (path) => {
       router.push(path)
     }
     
+    // 退出逻辑
     const handleLogout = () => {
       localStorage.removeItem('adminToken')
       localStorage.removeItem('adminUsername')
       localStorage.clear()
       ElMessage.success('已退出登录')
+      // 重定向到登录页面
       router.push('/')
     }
     

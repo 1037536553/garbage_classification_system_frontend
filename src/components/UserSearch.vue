@@ -143,6 +143,10 @@ export default {
       return currentEditItem.value.role === 0 ? '普通用户' : '管理员'
     })
     
+    // 搜索用户
+    // 1.检测搜索框是否为空
+    // 2.空搜索框get获取所有用户；否则get获取指定id用户
+    // 3.如果用户不存在，显示错误信息
     const searchUser = async () => {
       // 清空上一次结果
       searchResult.value = [];
@@ -229,6 +233,8 @@ export default {
     };
     
     // 更新用户密码
+    // 1.如果输入了新密码，则向后端发送PUT请求更新密码
+    // 2.如果没有输入新密码，则不更新密码
     const updateUserPassword = async (userId, newPassword) => {
       try {
         const response = await axios.put(

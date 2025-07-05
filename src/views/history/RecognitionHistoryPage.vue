@@ -1,7 +1,7 @@
 <template>
   <div class="history-page">
     
-      <RecognitionHistorySearch :token="token" />
+      <RecognitionHistorySearch/>
 
   </div>
 </template>
@@ -13,12 +13,6 @@ import RecognitionHistorySearch from '/src/components/RecognitionHistorySearch.v
 export default {
   components: {
     RecognitionHistorySearch
-  },
-  setup() {
-    const token = inject('adminToken') || localStorage.getItem('adminToken')
-    return {
-      token
-    }
   }
 }
 </script>

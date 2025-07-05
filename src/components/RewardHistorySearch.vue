@@ -21,7 +21,7 @@
           class="search-button"
           style="margin-left: 10px;"
         >
-          <el-icon><Search /></el-icon> 查询
+          <el-icon><Search /></el-icon> 搜索
         </el-button>
         <el-button 
           type="info" 
@@ -60,7 +60,7 @@
       <el-icon class="is-loading" style="font-size: 24px;">
         <Loading />
       </el-icon>
-      <span>查询中...</span>
+      <span>搜索中...</span>
     </div>
 
     <div v-if="searchError" class="error-message">
@@ -158,10 +158,12 @@ export default {
       notes: ''
     })
     
-    // 计算属性
+    // 属性过滤页面
     const filteredHistory = computed(() => {
       return historyList.value.filter(item => {
         // 日期过滤
+        // 选择两个日期
+        // 显示日期范围内的记录
         if (dateRange.value && dateRange.value.length === 2) {
           const startDate = new Date(dateRange.value[0])
           const endDate = new Date(dateRange.value[1])
@@ -174,6 +176,7 @@ export default {
         }
         
         // 物品名称过滤
+        // 如果输入了物品名称，则只显示包含该名称的记录
         if (filterRewardName.value && 
             !item.reward_name.toLowerCase().includes(filterRewardName.value.toLowerCase())) {
           return false
@@ -183,10 +186,12 @@ export default {
       })
     })
     
+    // 计算总消耗积分
     const totalPointsSpent = computed(() => {
       return historyList.value.reduce((sum, item) => sum + item.points_spent, 0)
     })
     
+    // 计算兑换物品种类数
     const uniqueRewards = computed(() => {
       const rewards = new Set()
       historyList.value.forEach(item => rewards.add(item.reward_name))
@@ -194,6 +199,9 @@ export default {
     })
 
     // 搜索历史记录
+    // 1.搜索框为空时，无法点击“搜索”按钮
+    // 2.搜索框有内容时，向后端发送相应用户ID查询
+    // 3.接受后端响应
     const searchHistory = async () => {
 
       historyList.value = []
@@ -213,9 +221,9 @@ export default {
         historyList.value = response.data
       } catch (error) {
         if (error.response?.status === 404) {
-          searchError.value = '未查询到该用户的兑换历史记录'
+          searchError.value = '未搜索到该用户的兑换历史记录'
         } else {
-          searchError.value = `查询失败: ${error.response?.data?.message || error.message}`
+          searchError.value = `搜索失败: ${error.response?.data?.message || error.message}`
         }
       } finally {
         loading.value = false
@@ -264,10 +272,6 @@ export default {
   flex-wrap: wrap;
 }
 
-.header h2 {
-  color: #e6a23c;
-  margin: 0;
-}
 
 .search-box {
   display: flex;

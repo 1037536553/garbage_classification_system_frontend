@@ -1,22 +1,16 @@
 <template>
   <div class="reward-history-page">
-    <RewardHistorySearch :token="token" />
+    <RewardHistorySearch />
   </div>
 </template>
 
 <script>
-import { inject } from 'vue'
+
 import RewardHistorySearch from '/src/components/RewardHistorySearch.vue'
 
 export default {
   components: {
     RewardHistorySearch
-  },
-  setup() {
-    const token = inject('adminToken') || localStorage.getItem('adminToken')
-    return {
-      token
-    }
   }
 }
 </script>
