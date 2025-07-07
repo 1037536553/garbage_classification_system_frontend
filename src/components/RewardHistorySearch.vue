@@ -100,6 +100,8 @@
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="兑换时间"  sortable />
+        <el-table-column prop="address" label="地址"  sortable />
+        <el-table-column prop="phone_number" label="电话"  sortable />
       </el-table>
     </div>
 
@@ -211,7 +213,7 @@ export default {
       try {
         const userId = searchUserId.value.trim()
         const response = await axios.get(
-          `${baseURL}/api/points/reward/history/${userId}`,
+          `${baseURL}/api/points/rewards/history/${userId}`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('adminToken')}`

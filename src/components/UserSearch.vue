@@ -1,3 +1,5 @@
+[file name]: UserSearch.vue
+[file content begin]
 <template>
   <div class="user-search">
     <div class="search-container">
@@ -142,6 +144,51 @@ export default {
     const roleDisplay = computed(() => {
       return currentEditItem.value.role === 0 ? '普通用户' : '管理员'
     })
+
+    // 用户名模糊搜索
+    const filterUsers = (users, keyword) => {
+      if (!keyword) return users;
+      
+      // 解析逻辑运算符
+      const tokens = keyword.split(/(&&|\|\|)/).filter(token => token.trim());
+      
+      // 如果没有运算符，则将空格替换为&&，使用AND逻辑
+      if (tokens.length === 1) {
+        // 按空格分割关键词（过滤空字符串）
+        const andTerms = tokens[0].split(/\s+/).filter(t => t);
+        // 使用AND逻辑：所有关键词都必须匹配
+        return users.filter(user => {
+          const username = user.username.toLowerCase();
+          return andTerms.every(term =>
+            username.includes(term.toLowerCase())
+          );
+        });
+      }
+
+      
+      // 处理逻辑运算
+      let result = [...users];
+      let currentOperator = '&&'; // 默认AND逻辑
+      
+      tokens.forEach(token => {
+        if (token === '&&' || token === '||') {
+          currentOperator = token;
+        } else {
+          const term = token.toLowerCase();
+          if (currentOperator === '&&') {
+            result = result.filter(user => 
+              user.username.toLowerCase().includes(term))
+          } else if (currentOperator === '||') {
+            const newMatches = users.filter(user => 
+              user.username.toLowerCase().includes(term) && 
+              !result.some(r => r.id === user.id))
+            result = [...result, ...newMatches];
+          }
+        }
+      });
+      
+      return result;
+    };
     
     // 搜索用户
     // 1.检测搜索框是否为空
@@ -166,16 +213,32 @@ export default {
           )
           searchResult.value = response.data;
         } else {
-          // 获取单个用户
-          const response = await axios.get(
-            `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          // 首先尝试按ID精确搜索
+          const idSearch = /^\d+$/.test(searchKeyword.value.trim());
+          if (idSearch) {
+            // 按ID精确搜索
+            const response = await axios.get(
+              `${baseURL}/api/admin/users/${searchKeyword.value.trim()}`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                }
               }
-            }
-          );
-          searchResult.value = [response.data];
+            );
+            searchResult.value = [response.data];
+          } else {
+            // 模糊搜索：获取所有用户然后过滤
+            const response = await axios.get(
+              `${baseURL}/api/admin/users`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                }
+              }
+            );
+            const allUsers = response.data;
+            searchResult.value = filterUsers(allUsers, searchKeyword.value.trim());
+          }
         }
 
       } catch (error) {
