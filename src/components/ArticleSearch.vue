@@ -1,7 +1,10 @@
 <template>
   <div class="article-search">
     <div class="search-container">
-      <el-input v-model="searchKeyword" placeholder="请输入文章ID（留空则获取所有文章）" clearable @keyup.enter="searchArticles"
+      <el-input v-model="searchKeyword" 
+      placeholder="请输入文章ID或标题（留空则获取所有文章）" 
+      clearable 
+      @keyup.enter="searchArticles"
         style="flex: 1">
         <template #prepend>
           <el-icon>
@@ -138,6 +141,48 @@ export default {
       title: '',
       content: ''
     })
+
+    // 预处理管检测函数
+    const preprocessKeyword = (keyword) => {
+      // 1. 移除逻辑运算符周围的空格
+      let processed = keyword.replace(/\s*(&&|\|\|)\s*/g, '$1');
+      // 2. 将剩余的空格替换为&&
+      processed = processed.replace(/\s+/g, '&&');
+      return processed;
+    }
+
+    // 文章过滤函数
+    const filterArticles = (articles, keyword) => {
+      if (!keyword) return articles;
+
+      const tokens = keyword.split(/(&&|\|\|)/).filter(token => token.trim());
+
+      if (tokens.length === 1) {
+        return articles.filter(article =>
+          article.title.toLowerCase().includes(tokens[0].toLowerCase()));
+      }
+      let result = [...articles];
+      let currentOperator = '&&';
+
+      tokens.forEach(token => {
+        if (token === '&&' || token === '||') {
+          currentOperator = token;
+        } else {
+          const term = token.toLowerCase();
+          if (currentOperator === '&&') {
+            result = result.filter(article =>
+              article.title.toLowerCase().includes(term))
+          } else if (currentOperator === '||') {
+            const newMatches = articles.filter(article =>
+              article.title.toLowerCase().includes(term) &&
+              !result.some(r => r.id === article.id))
+            result = [...result, ...newMatches];
+          }
+        }
+      });
+
+      return result;
+    };
     
     // 文章搜索
     // 1.检测搜索框是否为空
@@ -146,7 +191,7 @@ export default {
       articles.value = []
       searchError.value = ''
       loading.value = true
-      
+
       try {
         if (!searchKeyword.value || !searchKeyword.value.trim()) {
           // 获取所有文章
@@ -160,17 +205,34 @@ export default {
           )
           articles.value = response.data
         } else {
-          // 获取单篇文章
-          const articleId = searchKeyword.value.trim()
-          const response = await axios.get(
-            `${baseURL}/api/articles/get/${articleId}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          // 检查是否为纯数字（ID搜索）
+          const idSearch = /^\d+$/.test(searchKeyword.value.trim())
+          if (idSearch) {
+            // 获取单篇文章
+            const articleId = searchKeyword.value.trim()
+            const response = await axios.get(
+              `${baseURL}/api/articles/get/${articleId}`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                }
               }
-            }
-          )
-          articles.value = [response.data]
+            )
+            articles.value = [response.data]
+          } else {
+            // 标题模糊搜索
+            const response = await axios.get(
+              `${baseURL}/api/articles/get`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                }
+              }
+            )
+            const allArticles = response.data;
+            const processedKeyword = preprocessKeyword(searchKeyword.value.trim());
+            articles.value = filterArticles(allArticles, processedKeyword);
+          }
         }
       } catch (error) {
         if (error.response?.status === 404) {
