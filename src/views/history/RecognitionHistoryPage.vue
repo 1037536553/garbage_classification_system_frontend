@@ -2,6 +2,7 @@
   <div class="history-page">
     
       <RecognitionHistorySearch/>
+      <RecognitionHistoryStatus/>
 
   </div>
 </template>
@@ -9,10 +10,12 @@
 <script>
 import { inject } from 'vue'
 import RecognitionHistorySearch from '/src/components/RecognitionHistorySearch.vue'
+import RecognitionHistoryStatus from '/src/components/RecognitionHistoryStatus.vue';
 
 export default {
   components: {
-    RecognitionHistorySearch
+    RecognitionHistorySearch,
+    RecognitionHistoryStatus
   }
 }
 </script>
