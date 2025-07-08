@@ -91,16 +91,30 @@
         </el-col>
       </el-row>
     </div>
+    
+    <!-- 新增图表区域 -->
+    <div v-if="historyData.length > 0" class="charts-container">
+      <div class="chart-wrapper">
+        <div class="chart-title">分类分布（饼图）</div>
+        <div ref="pieChart" class="chart"></div>
+      </div>
+      
+      <div class="chart-wrapper">
+        <div class="chart-title">分类数量（柱状图）</div>
+        <div ref="barChart" class="chart"></div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, User, Search } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { baseURL } from '/src/config.js'
 import { useRoute } from 'vue-router'
+import * as echarts from 'echarts'
 
 export default {
   components: {
@@ -115,6 +129,12 @@ export default {
     const historyData = ref([])
     const searchError = ref('')
     const searched = ref(false)
+    
+    // 新增图表相关变量
+    const pieChart = ref(null)
+    const barChart = ref(null)
+    let pieInstance = null
+    let barInstance = null
 
     // 自动搜索
     const autoSearch = () =>{
@@ -129,10 +149,6 @@ export default {
     })
     
     // 搜索用户识别记录
-    // 1.搜索框为空时，无法点击“搜索”按钮
-    // 2.搜索框有内容时，向后端发送相应用户ID查询
-    // 3.接受后端响应
-    // 4.显示响应内容
     const searchHistory = async () => {
       if (!searchUserId.value) {
         ElMessage.warning('请输入用户ID')
@@ -154,6 +170,11 @@ export default {
           }
         )
         historyData.value = response.data
+        
+        // 数据加载完成后初始化图表
+        nextTick(() => {
+          initCharts()
+        })
       } catch (error) {
         if (error.response?.status === 404) {
           searchError.value = '未找到该用户的识别记录'
@@ -184,6 +205,165 @@ export default {
       return categories.size
     })
     
+    // 新增：计算分类统计数据
+    const categoryStats = computed(() => {
+      const stats = {}
+      historyData.value.forEach(item => {
+        if (item.status === 0) { // 只统计有效记录
+          const category = item.result_category || '未知'
+          stats[category] = (stats[category] || 0) + 1
+        }
+      })
+      
+      return Object.entries(stats).map(([category, count]) => ({
+        category,
+        count
+      })).sort((a, b) => b.count - a.count) // 按数量降序排序
+    })
+    
+    // 初始化图表
+    const initCharts = () => {
+      if (categoryStats.value.length === 0) return
+      
+      // 初始化饼图
+      if (pieChart.value) {
+        if (pieInstance) {
+          pieInstance.dispose()
+        }
+        pieInstance = echarts.init(pieChart.value)
+        
+        const pieOption = {
+          tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
+          },
+          legend: {
+            orient: 'vertical',
+            right: 10,
+            top: 'center',
+            data: categoryStats.value.map(item => item.category)
+          },
+          series: [
+            {
+              name: '分类统计',
+              type: 'pie',
+              radius: ['40%', '70%'],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 2
+              },
+              label: {
+                show: false,
+                position: 'center'
+              },
+              emphasis: {
+                label: {
+                  show: true,
+                  fontSize: '18',
+                  fontWeight: 'bold'
+                }
+              },
+              labelLine: {
+                show: false
+              },
+              data: categoryStats.value.map(item => ({
+                name: item.category,
+                value: item.count
+              }))
+            }
+          ]
+        }
+        
+        pieInstance.setOption(pieOption)
+      }
+      
+      // 初始化柱状图
+      if (barChart.value) {
+        if (barInstance) {
+          barInstance.dispose()
+        }
+        barInstance = echarts.init(barChart.value)
+        
+        const barOption = {
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
+          },
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+          },
+          xAxis: {
+            type: 'value',
+            name: '数量'
+          },
+          yAxis: {
+            type: 'category',
+            name: '分类',
+            data: categoryStats.value.map(item => item.category),
+            axisLabel: {
+              interval: 0,
+              rotate: 0
+            }
+          },
+          series: [
+            {
+              name: '数量',
+              type: 'bar',
+              data: categoryStats.value.map(item => item.count),
+              itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                  { offset: 0, color: '#83bff6' },
+                  { offset: 0.5, color: '#188df0' },
+                  { offset: 1, color: '#188df0' }
+                ])
+              },
+              emphasis: {
+                itemStyle: {
+                  color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                    { offset: 0, color: '#2378f7' },
+                    { offset: 0.7, color: '#2378f7' },
+                    { offset: 1, color: '#83bff6' }
+                  ])
+                }
+              }
+            }
+          ]
+        }
+        
+        barInstance.setOption(barOption)
+      }
+      
+      // 添加窗口大小变化监听器
+      window.addEventListener('resize', handleResize)
+    }
+    
+    // 处理窗口大小变化
+    const handleResize = () => {
+      if (pieInstance) {
+        pieInstance.resize()
+      }
+      if (barInstance) {
+        barInstance.resize()
+      }
+    }
+    
+    // 监听数据变化
+    watch(categoryStats, () => {
+      initCharts()
+    })
+    
+    // 组件卸载时清理
+    onMounted(() => {
+      window.addEventListener('resize', handleResize)
+    })
+    
     return {
       loading,
       searchUserId,
@@ -194,6 +374,8 @@ export default {
       deletedRecords,
       uniqueCategories,
       searchHistory,
+      pieChart,
+      barChart
     }
   }
 }
@@ -281,4 +463,37 @@ export default {
   width: 300px;
 }
 
+/* 新增图表样式 */
+.charts-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.chart-wrapper {
+  flex: 1;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.chart-title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #606266;
+}
+
+.chart {
+  height: 400px;
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .charts-container {
+    flex-direction: column;
+  }
+}
 </style>
