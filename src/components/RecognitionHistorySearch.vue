@@ -46,7 +46,14 @@
             {{ row.query_type === 'text' ? '文字查询' : '图片查询' }}
           </template>
         </el-table-column>
-        <el-table-column prop="query_content" label="查询内容" sortable />
+        <el-table-column prop="query_content" label="查询内容" sortable>
+          <template #default="{ row }">
+            <span v-if="row.query_type === 'text'">{{ row.query_content }}</span>
+            <a v-else href="javascript:void(0)" @click="showImage(row.query_content)" style="color: #409eff; text-decoration: underline;">
+              {{ row.query_content }}
+            </a>
+          </template>
+        </el-table-column>
         <el-table-column prop="result_category" label="分类结果" width="110" sortable />
         <el-table-column prop="created_at" label="查询时间" sortable />
         <el-table-column prop="status" label="状态" width="80" sortable>
@@ -104,11 +111,34 @@
         <div ref="barChart" class="chart"></div>
       </div>
     </div>
+
+    <!-- 图片预览对话框 -->
+    <el-dialog v-model="imageDialogVisible" title="识别图片" width="50%" @close="closeImageDialog">
+      <div style="text-align: center; min-height: 200px;">
+        <div v-if="imageLoading" class="image-loading">
+          <el-icon class="is-loading" style="font-size: 24px;">
+            <Loading />
+          </el-icon>
+          <span>图片加载中...</span>
+        </div>
+        <img 
+          v-if="imageUrl" 
+          :src="imageUrl" 
+          style="max-width: 100%; max-height: 70vh; display: block; margin: 0 auto;" 
+          @load="imageLoading = false"
+          @error="handleImageError"
+          alt="识别图片"
+        />
+        <div v-if="imageError" class="error-message">
+          {{ imageError }}
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, User, Search } from '@element-plus/icons-vue'
 import axios from 'axios'
@@ -135,6 +165,12 @@ export default {
     const barChart = ref(null)
     let pieInstance = null
     let barInstance = null
+
+    // 图片预览相关变量
+    const imageDialogVisible = ref(false)
+    const imageLoading = ref(false)
+    const imageUrl = ref('')
+    const imageError = ref('')
 
     // 自动搜索
     const autoSearch = () =>{
@@ -184,6 +220,49 @@ export default {
       } finally {
         loading.value = false
       }
+    }
+    
+    // 显示图片
+    const showImage = async (filename) => {
+      // 重置状态
+      imageLoading.value = true
+      imageUrl.value = ''
+      imageError.value = ''
+      imageDialogVisible.value = true
+      
+      try {
+        const response = await axios.get(
+          `${baseURL}/api/recognize/uploads/${encodeURIComponent(filename)}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            responseType: 'blob' // 指定响应类型为二进制数据
+          }
+        )
+        
+        // 创建Blob URL
+        const blob = new Blob([response.data])
+        imageUrl.value = URL.createObjectURL(blob)
+      } catch (error) {
+        imageError.value = `获取图片失败: ${error.response?.data?.message || error.message}`
+        imageLoading.value = false
+      }
+    }
+    
+    // 关闭图片对话框
+    const closeImageDialog = () => {
+      // 释放Blob URL资源
+      if (imageUrl.value) {
+        URL.revokeObjectURL(imageUrl.value)
+        imageUrl.value = ''
+      }
+    }
+    
+    // 处理图片加载错误
+    const handleImageError = () => {
+      imageLoading.value = false
+      imageError.value = '图片加载失败，请重试'
     }
     
     // 有效记录统计
@@ -364,6 +443,24 @@ export default {
       window.addEventListener('resize', handleResize)
     })
     
+    onUnmounted(() => {
+      // 释放图表资源
+      if (pieInstance) {
+        pieInstance.dispose()
+        pieInstance = null
+      }
+      if (barInstance) {
+        barInstance.dispose()
+        barInstance = null
+      }
+      // 释放图片资源
+      if (imageUrl.value) {
+        URL.revokeObjectURL(imageUrl.value)
+      }
+      // 移除事件监听
+      window.removeEventListener('resize', handleResize)
+    })
+    
     return {
       loading,
       searchUserId,
@@ -375,7 +472,15 @@ export default {
       uniqueCategories,
       searchHistory,
       pieChart,
-      barChart
+      barChart,
+      // 图片预览相关
+      imageDialogVisible,
+      imageLoading,
+      imageUrl,
+      imageError,
+      showImage,
+      closeImageDialog,
+      handleImageError
     }
   }
 }
@@ -495,5 +600,15 @@ export default {
   .charts-container {
     flex-direction: column;
   }
+}
+
+/* 图片加载样式 */
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #409eff;
 }
 </style>
