@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { 
   ElMessage
 } from 'element-plus'
@@ -129,6 +129,7 @@ import {
 } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { baseURL } from '/src/config.js'
+import { useRoute } from 'vue-router'
 
 export default {
   components: {
@@ -141,6 +142,7 @@ export default {
     Coin
   },
   setup() {
+    const route = useRoute()
     const loading = ref(false)
     const searchUserId = ref('')
     const historyList = ref([])
@@ -158,6 +160,18 @@ export default {
       points_spent: 0,
       created_at: '',
       notes: ''
+    })
+
+        // 自动搜索
+    const autoSearch = () =>{
+      if(route.query.user_id){
+        searchUserId.value = route.query.user_id
+        searchHistory()
+      }
+    }
+
+    onMounted(()=>{
+      autoSearch()
     })
     
     // 属性过滤页面

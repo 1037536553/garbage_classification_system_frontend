@@ -95,11 +95,12 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, User, Search } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { baseURL } from '/src/config.js'
+import { useRoute } from 'vue-router'
 
 export default {
   components: {
@@ -108,11 +109,24 @@ export default {
     Search
   },
   setup() {
+    const route = useRoute()
     const loading = ref(false)
     const searchUserId = ref('')
     const historyData = ref([])
     const searchError = ref('')
     const searched = ref(false)
+
+    // 自动搜索
+    const autoSearch = () =>{
+      if(route.query.user_id){
+        searchUserId.value = route.query.user_id
+        searchHistory()
+      }
+    }
+
+    onMounted(()=>{
+      autoSearch()
+    })
     
     // 搜索用户识别记录
     // 1.搜索框为空时，无法点击“搜索”按钮

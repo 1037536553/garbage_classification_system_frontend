@@ -11,12 +11,11 @@
           </el-icon>
         </template>
       </el-input>
-      <el-button type="success" 
-      @click="searchUser" 
-      :disabled="loading" 
-      class="search-button"
+      <el-button type="success" @click="searchUser" :disabled="loading" class="search-button"
         style="margin-left: 10px;">
-        <el-icon><Search /></el-icon>搜索
+        <el-icon>
+          <Search />
+        </el-icon>搜索
       </el-button>
     </div>
 
@@ -33,15 +32,15 @@
 
     <div class="result-container" v-if="searchResult">
       <el-table :data="searchResult" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="id" label="用户ID" width="100" sortable/>
-        <el-table-column prop="username" label="登录名" sortable/>
+        <el-table-column prop="id" label="用户ID" width="100" sortable />
+        <el-table-column prop="username" label="登录名" sortable />
         <!-- <el-table-column prop="userpassword" label="密码"  /> -->
         <el-table-column prop="role" label="权限" sortable>
           <template #default="{ row }">
             {{ row.role === 0 ? '普通用户' : '管理员' }}
           </template>
         </el-table-column>
-        <el-table-column prop="points" label="积分" sortable/>
+        <el-table-column prop="points" label="积分" sortable />
         <el-table-column prop="status" label="状态" sortable>
           <template #default="{ row }">
             <el-tag :type="row.status === 0 ? 'success' : 'danger'">
@@ -49,10 +48,24 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="80">
+        <el-table-column label="操作" width="240">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="openEditDialog(row)">
               修改
+            </el-button>
+            <!-- 新增识别历史按钮 -->
+            <el-button 
+            type="success" 
+            size="small" 
+            @click="goToRecognitionHistory(row.id)">
+              识别历史
+            </el-button>
+            <!-- 新增兑换历史按钮 -->
+            <el-button 
+            type="warning" 
+            size="small" 
+            @click="goToRewardHistory(row.id)">
+              兑换历史
             </el-button>
           </template>
         </el-table-column>
@@ -117,6 +130,7 @@ import { ElMessage } from 'element-plus'
 import { Warning, Loading, User, Search } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { baseURL } from '/src/config.js'
+import { useRouter } from 'vue-router'
 export default {
   components: {
     Warning,
@@ -125,6 +139,7 @@ export default {
     Search
   },
   setup() {
+    const router = useRouter()
     const loading = ref(false)
     const searchKeyword = ref('')
     const searchResult = ref([])
@@ -145,6 +160,8 @@ export default {
       return currentEditItem.value.role === 0 ? '普通用户' : '管理员'
     })
 
+
+
     // 用户名模糊搜索
     const filterUsers = (users, keyword) => {
       if (!keyword) return users;
@@ -154,15 +171,8 @@ export default {
       
       // 如果没有运算符，则将空格替换为&&，使用AND逻辑
       if (tokens.length === 1) {
-        // 按空格分割关键词（过滤空字符串）
-        const andTerms = tokens[0].split(/\s+/).filter(t => t);
-        // 使用AND逻辑：所有关键词都必须匹配
-        return users.filter(user => {
-          const username = user.username.toLowerCase();
-          return andTerms.every(term =>
-            username.includes(term.toLowerCase())
-          );
-        });
+        return users.filter(user => 
+      user.username.toLowerCase().includes(tokens[0].toLowerCase()));
       }
 
       
@@ -190,6 +200,16 @@ export default {
       return result;
     };
     
+    // 预处理关键词：将空格替换为&&，并移除运算符周围的空格
+    const preprocessKeyword = (keyword) => {
+      // 1. 移除逻辑运算符周围的空格
+      let processed = keyword.replace(/\s*(&&|\|\|)\s*/g, '$1');
+
+      // 2. 将剩余的空格替换为&&
+      processed = processed.replace(/\s+/g, '&&');
+
+      return processed;
+    };
     // 搜索用户
     // 1.检测搜索框是否为空
     // 2.空搜索框get获取所有用户；否则get获取指定id用户
@@ -237,7 +257,8 @@ export default {
               }
             );
             const allUsers = response.data;
-            searchResult.value = filterUsers(allUsers, searchKeyword.value.trim());
+            const processedKeyword = preprocessKeyword(searchKeyword.value.trim());
+            searchResult.value = filterUsers(allUsers, processedKeyword);
           }
         }
 
@@ -252,6 +273,8 @@ export default {
         loading.value=false
       }
     };
+
+
     
     // 打开编辑对话框
     const openEditDialog = (user) => {
@@ -347,6 +370,21 @@ export default {
         // 错误处理已在各自函数中完成
       }
     };
+    // 新增：跳转到识别历史页面
+    const goToRecognitionHistory = (userId) => {
+      router.push({
+        path: '/history',
+        query: { user_id: userId }
+      })
+    }
+
+    // 新增：跳转到兑换历史页面
+    const goToRewardHistory = (userId) => {
+      router.push({
+        path: '/reward',
+        query: { user_id: userId }
+      })
+    }
     
     return {
       loading,
@@ -360,8 +398,11 @@ export default {
       searchUser,
       openEditDialog,
       updateUser,
-      isAdminUser
+      isAdminUser,
+      goToRecognitionHistory,
+      goToRewardHistory
     }
+
   }
 }
 </script>

@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
@@ -41,7 +41,20 @@ export default {
     const route = useRoute()
     
     const username = ref(localStorage.getItem('adminUsername') || '管理员')
-    
+    // 新增：变化监听器
+    watch(
+      () => route.query,
+      (newQuery) => {
+        // 当路由变化且带有 user_id 参数时，触发自动搜索
+        if (newQuery.user_id) {
+          // 延迟执行确保页面已渲染
+          setTimeout(() => {
+            window.dispatchEvent(new Event('auto-search-trigger'))
+          }, 100)
+        }
+      }
+    )
+
     // 检查当前路由
     const isActive = (path) => {
       return route.path.includes(path) ? 'primary' : ''
