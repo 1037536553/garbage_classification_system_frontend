@@ -117,7 +117,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showEditDialog = false">取消</el-button>
-          <el-button type="primary" @click="updateUser">保存</el-button>
+          <el-button type="primary" @click="updateUser">确认</el-button>
         </span>
       </template>
     </el-dialog>
